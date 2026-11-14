@@ -1,0 +1,6 @@
+incident_id,timestamp_mins,type,severity,duration_mins
+INC-001,0,Power Fault,3,60
+INC-002,5,Oxygen Fault,2,50
+INC-003,10,Hull Crack,1,45
+INC-004,15,Medical Emergency,1,30
+INC-005,20,Power Fault,3,40
