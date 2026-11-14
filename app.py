@@ -1,41 +1,44 @@
 import json
 import streamlit as st
-from dispatch_engine import process_csv_to_json
+from dispatch_engine import solve_dispatch
 
-st.set_page_config(page_title="Mars Colony Dispatch", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="AlgoX Mars Colony Dispatch", page_icon="🚀", layout="wide")
 
-st.title("🚀 Mars Colony Emergency Dispatch System")
-st.caption("3 Response Crews Active: Crew Alpha | Crew Beta | Crew Gamma")
+st.title("🚀 AlgoX: Mars Colony Emergency Response")
+st.caption("Crews: E (STRUCTURAL) | M (MEDICAL) | L (LIFE_SUPPORT) — Non-matching crews take 2× duration")
 
 col1, col2 = st.columns(2)
 
-# --- MODULE 1: CSV INPUT ---
 with col1:
     st.header("1. Input Module (.CSV)")
-    uploaded_file = st.file_uploader("Upload Colony Incident Log", type=["csv"])
-    
-    st.markdown("**Expected CSV Columns:**")
-    st.code("incident_id,timestamp_mins,type,severity,duration_mins\nINC-001,10,Hull Crack,1,45", language="csv")
+    uploaded_file = st.file_uploader("Upload AlgoX Incident CSV", type=["csv"])
 
-# --- MODULE 2: JSON OUTPUT ---
+    st.markdown("**Expected AlgoX CSV Format:**")
+    st.code("id,arrival,category,severity,duration\n1,0,STRUCTURAL,6,4\n2,1,MEDICAL,9,3\n3,2,STRUCTURAL,3,5", language="csv")
+
 with col2:
-    st.header("2. Output Module (.JSON)")
-    
+    st.header("2. Output Module (submission.json)")
+
     if uploaded_file is not None:
         csv_content = uploaded_file.getvalue().decode("utf-8")
-        
-        result_data = process_csv_to_json(csv_content)
-        json_string = json.dumps(result_data, indent=2)
-        
-        st.success(f"Dispatched {result_data['total_incidents_resolved']} incidents across 3 crews.")
-        
+
+        submission_data, safety_score, validation_errors = solve_dispatch(csv_content)
+        json_string = json.dumps(submission_data, indent=2)
+
+        if not validation_errors:
+            st.success(f"✅ Judge Validation Passed (All 7 Rules) | Colony Safety Score: **{safety_score}**")
+        else:
+            st.error("❌ Validation Errors Detected:")
+            for err in validation_errors:
+                st.write(f"- {err}")
+
         st.download_button(
-            label="⬇️ Download Dispatch Schedule (.JSON)",
+            label="⬇️ Download submission.json",
             data=json_string,
-            file_name="mars_dispatch_output.json",
+            file_name="submission.json",
             mime="application/json"
         )
-        
-        st.json(result_data)
+
+        st.json(submission_data)
     else:
-        st.info("Upload a CSV file on the left to generate the JSON dispatch log.")
+        st.info("Upload sample1.csv, sample2.csv, sample3.csv, or the final dataset on the left.")
